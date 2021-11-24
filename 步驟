@@ -1,0 +1,19 @@
+vue add tailwind
+
+npm i leaflet
+
+
+npm install --save-dev @fortawesome/fontawesome-free
+接著在 main.js 讀入檔案
+import '@fortawesome/fontawesome-free/css/all.css'
+import '@fortawesome/fontawesome-free/js/all.js'
+然後就可以在專案裡面使用 Font Awesome 提供的方式使用圖示了，例如：
+
+<i class="fas fa-align-left"></i>
+
+資料來源: https://tools.wingzero.tw/article/sn/211
+
+import '@fortawesome/fontawesome-free/js/all.js'
+
+
+
