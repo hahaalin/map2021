@@ -2,7 +2,7 @@
   <div
     class="
       absolute
-      top-full
+      top-90
       flex flex-col
       lg:flex-row
       bg-white
@@ -41,3 +41,9 @@ export default {
   props: ["parent-ipInfo"],
 };
 </script>
+
+<style lang="postcss">
+.top-90 {
+  top: 90%;
+}
+</style>

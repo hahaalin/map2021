@@ -151,9 +151,3 @@ export default {
   },
 };
 </script>
-<style lang="postcss">
-.test {
-  @apply text-2xl;
-  height: calc(100vh - 12px);
-}
-</style>
