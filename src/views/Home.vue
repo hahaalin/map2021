@@ -15,10 +15,10 @@
       <!-- Search Input -->
       <div class="w-full max-w-screen-sm">
         <h1 class="text-white text-center text-3xl pb-4">地理位置搜索</h1>
-               <label class="block text-white">輸入IP地址以獲取地理位置信息。</label>
+        <label class="block text-white">輸入IP地址以獲取地理位置信息。</label>
         <div class="flex">
-   
-          <input @keyup="getIpInfo"
+          <input
+            @keyup.enter="getIpInfo"
             v-model="queryIp"
             class="
               flex-1
@@ -30,7 +30,8 @@
             type="text"
             placeholder="例如159.117.76.247"
           />
-          <div @click="getIpInfo"
+          <div
+            @click="getIpInfo"
             class="
               cursor-pointer
               bg-black
@@ -52,7 +53,6 @@
     <!-- Map -->
     <div id="mapid" class="flex-1 z-10"></div>
   </div>
-
 </template>
 
 <script>
@@ -61,12 +61,13 @@ import IPInfo from "@/components/IPInfo.vue";
 import L from "leaflet";
 import { onMounted, ref } from "vue";
 import "leaflet/dist/leaflet.css";
-import icon from 'leaflet/dist/images/marker-icon.png';
-import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+import icon from "leaflet/dist/images/marker-icon.png";
+import iconShadow from "leaflet/dist/images/marker-shadow.png";
+import axios from "axios";
 let DefaultIcon = L.icon({
-          iconUrl: icon,
-          shadowUrl: iconShadow
-      });
+  iconUrl: icon,
+  shadowUrl: iconShadow,
+});
 L.Marker.prototype.options.icon = DefaultIcon;
 
 export default {
@@ -83,73 +84,71 @@ export default {
     const ipInfo = ref(null);
 
     onMounted(() => {
-      mymap = L.map("mapid").setView([22.604799, 120.2976256], 13);
-
+      mymap = L.map("mapid").setView([23.97565, 120.9738819], 8);
+      marker = L.marker(["", ""]).addTo(mymap);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution:
           '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       }).addTo(mymap);
 
-       getPosition();
-
+      getPosition();
     });
 
-    const getPosition = ()=>{
-      
-      if(navigator.geolocation){
-       navigator.geolocation.getCurrentPosition(position => {
+    const getPosition = () => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            console.log(position.coords.latitude, position.coords.longitude);
 
-        console.log(position.coords.latitude, position.coords.longitude);
+            marker
+              .setLatLng([position.coords.latitude, position.coords.longitude])
+              .bindPopup("你現在的位置在這邊")
+              .openPopup();
 
-       
-        if(marker){
-          marker.setLatLng([position.coords.latitude,  position.coords.longitude]).bindPopup('你現在的位置在這邊')
-          .openPopup();
-        }else{
-            marker= L.marker([position.coords.latitude,  position.coords.longitude]).addTo(mymap).bindPopup('你現在的位置在這邊')
-          .openPopup();
-        }
-        mymap.flyTo([position.coords.latitude,  position.coords.longitude], 18);
+            mymap.flyTo(
+              [position.coords.latitude, position.coords.longitude],
+              18
+            );
+          },
+          (error) => {
+            console.log(error.message);
+          }
+        );
+      }
+    };
 
-      }, error =>{
-         console.log(error.message)
-      })
-    }
-    }
+    const getIpInfo = async () => {
+      try {
+        const response = await axios.get(
+          `https://geo.ipify.org/api/v1?apiKey=at_FBTi0rGPhQlKp2cRdOJV0t3Mibq6F&ipAddress=${queryIp.value}`
+        );
+        const result = response.data;
 
-    const getIpInfo = async()=>{
-        try{
-          const data = await fetch(`https://geo.ipify.org/api/v1?apiKey=at_FBTi0rGPhQlKp2cRdOJV0t3Mibq6F&ipAddress=${queryIp.value}`);
-          const result = await data.json();
-          console.log(result);
-          ipInfo.value = {
+        console.log(result);
+
+        ipInfo.value = {
           address: result.ip,
           state: result.location.region,
           timezone: result.location.timezone,
           isp: result.isp,
           lat: result.location.lat,
           lng: result.location.lng,
+        };
 
-          }
-
-        if(marker){
-            marker.setLatLng([ipInfo.value.lat, ipInfo.value.lng]).bindPopup('你現在的位置在這邊')
+        marker
+          .setLatLng([ipInfo.value.lat, ipInfo.value.lng])
+          .bindPopup("你查詢的位置在這邊")
           .openPopup();
-        }else{
-            marker = L.marker([ipInfo.value.lat, ipInfo.value.lng]).addTo(mymap).bindPopup('你現在的位置在這邊')
-          .openPopup();
-        }
-            mymap.flyTo([ipInfo.value.lat, ipInfo.value.lng], 13);
 
-        }catch(err){
-
-            console.log('fetch failed', err);
-        }
+        mymap.flyTo([ipInfo.value.lat, ipInfo.value.lng], 18);
+      } catch (err) {
+        alert(err);
+        queryIp.value = "";
       }
+    };
 
-         return { queryIp, ipInfo, getIpInfo ,getPosition};
-    }
-
+    return { queryIp, ipInfo, getIpInfo, getPosition };
+  },
 };
 </script>
 <style lang="postcss">
